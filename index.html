@@ -1,0 +1,821 @@
+
+code .
+[D[D[D[D[D[D[A[C[C[C[[A<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Questly – Kids Adventure Planner! 🌟</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&amp;family=Fredoka:wght@400;600&amp;display=swap');
+        
+        :root {
+            --primary: #ff6bcb;
+        }
+        
+        body {
+            font-family: 'Fredoka', sans-serif;
+        }
+        
+        .header-font {
+            font-family: 'Comic Neue', cursive;
+        }
+
+        .quest-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .quest-card:hover {
+            transform: scale(1.05) rotate(2deg);
+            box-shadow: 0 25px 50px -12px rgb(255 107 203);
+        }
+
+        .star {
+            animation: twinkle 1.5s infinite;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        .background {
+            background: linear-gradient(135deg, #a5f3fc 0%, #c7f2d6 100%);
+            animation: gradientShift 15s ease infinite;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+    </style>
+</head>
+<body class="background min-h-screen pb-12">
+    <div class="max-w-6xl mx-auto px-4">
+        <!-- HEADER -->
+        <div class="flex items-center justify-between py-6 border-b-4 border-white/50">
+            <div class="flex items-center gap-x-3">
+                <div class="w-14 h-14 bg-white rounded-3xl flex items-center justify-center text-4xl shadow-inner border-4 border-pink-300">🌟</div>
+                <h1 class="header-font text-5xl text-pink-600 tracking-tighter">Questly</h1>
+                <span class="text-2xl text-emerald-500 font-bold">for SuperKids 4–12</span>
+            </div>
+            
+            <div class="flex items-center gap-x-6">
+                <!-- Kid profile -->
+                <div id="kidProfile" onclick="editProfile()" class="flex items-center gap-x-3 bg-white rounded-3xl px-6 py-2 shadow-md cursor-pointer hover:shadow-xl transition-all">
+                    <div id="kidAvatar" class="w-10 h-10 bg-gradient-to-br from-pink-400 to-emerald-400 rounded-2xl flex items-center justify-center text-3xl"></div>
+                    <div>
+                        <div id="kidNameDisplay" class="font-bold text-xl text-pink-700"></div>
+                        <div id="kidAgeDisplay" class="text-xs text-emerald-600 -mt-1"></div>
+                    </div>
+                    <i class="fas fa-chevron-down text-pink-400"></i>
+                </div>
+
+                <!-- Points -->
+                <div onclick="showRewards()" class="flex items-center gap-x-2 bg-white rounded-3xl px-5 py-2 shadow-md cursor-pointer hover:scale-110 transition-all">
+                    <i class="fas fa-star text-yellow-400 text-3xl star"></i>
+                    <div>
+                        <span id="pointsDisplay" class="font-bold text-3xl text-yellow-500">0</span>
+                    </div>
+                    <span class="text-sm font-medium text-yellow-600">Adventure Coins</span>
+                </div>
+
+                <!-- Date -->
+                <div class="text-right">
+                    <div id="currentDate" class="text-xl font-bold text-pink-700"></div>
+                    <div id="dayStreak" class="text-xs flex items-center gap-x-1 justify-end text-emerald-600">
+                        <i class="fas fa-fire"></i>
+                        <span id="streakCount">3 day streak 🔥</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ONBOARDING MODAL (shown first time) -->
+        <div id="onboardingModal" onclick="if(event.target.id === 'onboardingModal') hideModal()" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+            <div onclick="event.stopImmediatePropagation()" class="bg-white rounded-3xl max-w-lg w-full mx-4 shadow-2xl overflow-hidden">
+                <div class="bg-gradient-to-r from-pink-400 to-emerald-400 text-white p-8 text-center">
+                    <h2 class="header-font text-4xl mb-2">Hi, future superstar! 🌈</h2>
+                    <p class="text-xl">Let’s make Questly YOUR adventure!</p>
+                </div>
+                
+                <div class="p-8 space-y-6">
+                    <div>
+                        <label class="block text-sm font-bold text-pink-700 mb-2">What’s your awesome name?</label>
+                        <input id="onboardName" type="text" 
+                               class="w-full px-5 py-4 rounded-2xl border-2 border-pink-200 focus:border-pink-400 text-2xl outline-none"
+                               placeholder="e.g. Amani or Jamal">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-bold text-pink-700 mb-2">How old are you? (4–12)</label>
+                        <input id="onboardAge" type="number" min="4" max="12"
+                               class="w-full px-5 py-4 rounded-2xl border-2 border-pink-200 focus:border-pink-400 text-2xl outline-none text-center"
+                               placeholder="8">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-bold text-pink-700 mb-2">What do you LOVE doing? (pick as many as you want!)</label>
+                        <div class="grid grid-cols-3 gap-3" id="interestGrid">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
+                </div>
+
+                <div class="px-8 pb-8">
+                    <button onclick="completeOnboarding()" 
+                            class="w-full bg-gradient-to-r from-pink-500 to-emerald-500 hover:from-pink-600 hover:to-emerald-600 text-white text-2xl font-bold py-6 rounded-3xl shadow-lg flex items-center justify-center gap-x-3">
+                        <span>LET’S GO ON AN ADVENTURE! 🚀</span>
+                        <i class="fas fa-rocket"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- MAIN TABS -->
+        <div class="flex gap-x-2 mt-8 border-b-4 border-white/30 pb-2 overflow-x-auto">
+            <button onclick="switchTab(0)" id="tab0"
+                    class="tab-button active flex-1 min-w-[180px] flex items-center justify-center gap-x-3 py-4 px-8 rounded-3xl text-2xl font-bold shadow-inner bg-white">
+                <i class="fas fa-home"></i>
+                <span>Home Dashboard</span>
+            </button>
+            <button onclick="switchTab(1)" id="tab1"
+                    class="tab-button flex-1 min-w-[180px] flex items-center justify-center gap-x-3 py-4 px-8 rounded-3xl text-2xl font-bold shadow-inner bg-white">
+                <i class="fas fa-calendar-alt"></i>
+                <span>Monthly Plans</span>
+            </button>
+            <button onclick="switchTab(2)" id="tab2"
+                    class="tab-button flex-1 min-w-[180px] flex items-center justify-center gap-x-3 py-4 px-8 rounded-3xl text-2xl font-bold shadow-inner bg-white">
+                <i class="fas fa-list-check"></i>
+                <span>Daily Quests</span>
+            </button>
+            <button onclick="switchTab(3)" id="tab3"
+                    class="tab-button flex-1 min-w-[180px] flex items-center justify-center gap-x-3 py-4 px-8 rounded-3xl text-2xl font-bold shadow-inner bg-white">
+                <i class="fas fa-clock"></i>
+                <span>Break Time</span>
+            </button>
+            <button onclick="switchTab(4)" id="tab4"
+                    class="tab-button flex-1 min-w-[180px] flex items-center justify-center gap-x-3 py-4 px-8 rounded-3xl text-2xl font-bold shadow-inner bg-white">
+                <i class="fas fa-book-open"></i>
+                <span>Journal + Gratitude</span>
+            </button>
+        </div>
+
+        <!-- TAB CONTENT CONTAINER -->
+        <div id="tabContents" class="mt-8">
+            
+            <!-- TAB 0: HOME DASHBOARD -->
+            <div id="content0" class="tab-content">
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                    <!-- Welcome message -->
+                    <div class="lg:col-span-8 bg-white/90 backdrop-blur-xl rounded-3xl p-10 shadow-2xl">
+                        <h2 id="welcomeHeader" class="header-font text-6xl text-pink-600 mb-6"></h2>
+                        <p id="dailyMotivation" class="text-3xl text-emerald-700 leading-tight"></p>
+                        
+                        <div class="mt-10 flex gap-6">
+                            <button onclick="startDay()" 
+                                    class="flex-1 bg-gradient-to-br from-emerald-400 to-teal-400 text-white text-3xl py-8 rounded-3xl font-bold flex items-center justify-center gap-x-4 hover:scale-105 transition-all">
+                                <i class="fas fa-play-circle text-5xl"></i>
+                                START TODAY’S QUEST!
+                            </button>
+                            
+                            <button onclick="getRandomPrompt()" 
+                                    class="flex-1 bg-gradient-to-br from-pink-400 to-purple-400 text-white text-3xl py-8 rounded-3xl font-bold flex items-center justify-center gap-x-4 hover:scale-105 transition-all">
+                                <i class="fas fa-magic text-5xl"></i>
+                                SURPRISE ME WITH A FUN IDEA!
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Quick stats -->
+                    <div class="lg:col-span-4 space-y-6">
+                        <div class="bg-white/90 backdrop-blur-xl rounded-3xl p-8 text-center shadow-2xl">
+                            <div class="text-7xl mb-4">🏆</div>
+                            <div id="completedToday" class="text-6xl font-bold text-emerald-500">0</div>
+                            <div class="text-xl font-medium">Quests smashed today!</div>
+                        </div>
+                        <div onclick="showScheduleModal()" class="bg-white/90 backdrop-blur-xl rounded-3xl p-8 cursor-pointer hover:bg-amber-100 transition-colors">
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <div class="uppercase text-amber-600 text-sm font-bold">Your schedule today</div>
+                                    <div id="nextEvent" class="text-2xl font-semibold">Piano lesson • 4:00 PM</div>
+                                </div>
+                                <i class="fas fa-clock text-5xl text-amber-400"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 1: MONTHLY PLANS -->
+            <div id="content1" class="tab-content hidden">
+                <div class="flex justify-between items-baseline mb-6">
+                    <h2 class="header-font text-5xl text-pink-600">Big Monthly Dreams 📅</h2>
+                    <button onclick="addMonthlyPlan()" 
+                            class="bg-white text-pink-600 px-8 py-3 rounded-3xl font-bold flex items-center gap-x-2 shadow-md">
+                        <i class="fas fa-plus"></i> Add a new big goal
+                    </button>
+                </div>
+                
+                <div id="monthlyPlansContainer" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Populated by JS -->
+                </div>
+                
+                <div class="mt-12 text-xl text-pink-700 font-medium flex items-center gap-x-3">
+                    <span>💡 Pro tip:</span> 
+                    <span class="bg-white px-4 py-2 rounded-3xl">Monthly goals turn into daily quests automatically!</span>
+                </div>
+            </div>
+
+            <!-- TAB 2: DAILY QUESTS / TO-DO -->
+            <div id="content2" class="tab-content hidden">
+                <div class="flex justify-between mb-6">
+                    <h2 class="header-font text-5xl text-pink-600">Today’s Epic Quests ✨</h2>
+                    <div class="flex gap-x-4">
+                        <button onclick="suggestDailyTasks()" 
+                                class="bg-emerald-400 hover:bg-emerald-500 text-white px-6 py-3 rounded-3xl font-bold flex items-center gap-x-2">
+                            <i class="fas fa-lightbulb"></i> Get smart suggestions
+                        </button>
+                        <button onclick="addCustomQuest()" 
+                                class="bg-pink-400 hover:bg-pink-500 text-white px-6 py-3 rounded-3xl font-bold flex items-center gap-x-2">
+                            <i class="fas fa-plus"></i> Add my own quest
+                        </button>
+                    </div>
+                </div>
+                
+                <div id="dailyQuestList" class="space-y-4">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+
+            <!-- TAB 3: BREAK TIME -->
+            <div id="content3" class="tab-content hidden bg-white/70 backdrop-blur-xl rounded-3xl p-10">
+                <h2 class="header-font text-5xl text-center text-teal-600 mb-8">Need a break, superstar? 🧘‍♀️</h2>
+                
+                <div class="max-w-md mx-auto bg-white rounded-3xl p-8 shadow-inner text-center">
+                    <div id="timerDisplay" class="text-8xl font-bold text-teal-500 mb-8 font-mono">45:00</div>
+                    
+                    <div class="flex justify-center gap-x-6">
+                        <button onclick="startFocusTimer()" 
+                                class="bg-teal-400 hover:bg-teal-500 text-white px-10 py-4 rounded-3xl text-2xl font-bold">Start 45-min focus timer</button>
+                        <button onclick="giveBreakSuggestion()" 
+                                class="bg-amber-400 hover:bg-amber-500 text-white px-10 py-4 rounded-3xl text-2xl font-bold">I need a break NOW!</button>
+                    </div>
+                    
+                    <div id="breakSuggestionBox" class="hidden mt-10 p-6 bg-amber-100 rounded-3xl text-left text-xl"></div>
+                </div>
+                
+                <p class="text-center mt-12 text-xl text-teal-700">Remember: even superheroes need rest &amp; creativity time!</p>
+            </div>
+
+            <!-- TAB 4: JOURNAL + GRATITUDE -->
+            <div id="content4" class="tab-content hidden">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <!-- Journal -->
+                    <div class="bg-white/90 rounded-3xl p-8">
+                        <h3 class="text-3xl font-bold text-pink-600 mb-4 flex items-center gap-x-3">
+                            <i class="fas fa-book"></i> Today’s Journal
+                        </h3>
+                        <textarea id="journalInput" rows="8"
+                                  class="w-full p-6 text-xl rounded-3xl border-4 border-pink-200 focus:border-pink-400 outline-none resize-none"
+                                  placeholder="What was the most fun thing you did today? How did it make you feel?"></textarea>
+                        <button onclick="saveJournal()" 
+                                class="mt-4 bg-pink-500 text-white px-8 py-4 rounded-3xl font-bold text-xl w-full">Save my story ✨</button>
+                    </div>
+                    
+                    <!-- Gratitude -->
+                    <div class="bg-white/90 rounded-3xl p-8">
+                        <h3 class="text-3xl font-bold text-emerald-600 mb-4 flex items-center gap-x-3">
+                            <i class="fas fa-heart"></i> 3 Things I’m Grateful For
+                        </h3>
+                        <div class="space-y-4">
+                            <input id="gratitude1" type="text" placeholder="1. ..." 
+                                   class="w-full px-6 py-4 rounded-3xl border-4 border-emerald-200 focus:border-emerald-400 outline-none text-xl">
+                            <input id="gratitude2" type="text" placeholder="2. ..." 
+                                   class="w-full px-6 py-4 rounded-3xl border-4 border-emerald-200 focus:border-emerald-400 outline-none text-xl">
+                            <input id="gratitude3" type="text" placeholder="3. ..." 
+                                   class="w-full px-6 py-4 rounded-3xl border-4 border-emerald-200 focus:border-emerald-400 outline-none text-xl">
+                        </div>
+                        <button onclick="saveGratitude()" 
+                                class="mt-6 bg-emerald-500 text-white px-8 py-4 rounded-3xl font-bold text-xl w-full">Lock in my gratitude ❤️</button>
+                    </div>
+                </div>
+                
+                <div class="mt-8 text-center">
+                    <button onclick="endDayCelebration()" 
+                            class="text-3xl bg-gradient-to-r from-pink-400 via-yellow-300 to-emerald-400 text-white px-16 py-6 rounded-3xl font-bold shadow-2xl flex items-center mx-auto gap-x-4">
+                        END DAY CELEBRATION! 🎉
+                        <span class="text-5xl">🌟</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating reminder bell -->
+    <div onclick="showReminders()" 
+         class="fixed bottom-8 right-8 bg-white text-pink-500 w-16 h-16 rounded-3xl shadow-2xl flex items-center justify-center text-4xl cursor-pointer hover:rotate-12 transition-transform">
+        <i class="fas fa-bell"></i>
+        <span id="reminderBadge" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center">3</span>
+    </div>
+
+    <!-- MODALS -->
+    <script>
+        // Tailwind script already loaded via CDN
+        function initTailwind() {
+            tailwind.config = {
+                content: [],
+                theme: { extend: {} }
+            }
+        }
+
+        // Global data store (simulates JSON file)
+        let appData = {
+            profile: null,
+            monthlyPlans: [],
+            dailyQuests: [],
+            completedCount: 0,
+            points: 125,
+            streak: 4,
+            lastLogin: "2026-03-25",
+            journalEntries: {},
+            gratitudeEntries: {},
+            interests: [],
+            schedule: [
+                { time: "09:00", title: "School time 📚" },
+                { time: "16:00", title: "Piano lesson 🎹" }
+            ],
+            reminders: []
+        }
+
+        // Kid-friendly activity database (tailored by age & interests)
+        const activityBank = {
+            general: [
+                "🐮 Feed the cows and give them big hugs",
+                "🚗 Wash the family car and make it sparkle",
+                "📚 Finish my school assignments with a smile",
+                "🏊‍♂️ Practice swimming like a dolphin",
+                "🎨 Paint a rainbow or my dream house",
+                "🎹 Play my favorite song on piano or guitar",
+                "🧶 Learn one new crochet stitch",
+                "👭 Call a friend and tell them a silly joke",
+                "🍪 Bake cookies with someone I love",
+                "🌳 Plant a seed and watch it grow"
+            ],
+            creative: ["Draw a comic about my day", "Make a friendship bracelet", "Build a LEGO dream city"],
+            learning: ["Learn 5 new Swahili words", "Watch a 5-minute science video", "Try a new math game"],
+            outdoor: ["Go on a mini treasure hunt outside", "Ride my bike around the compound", "Play football with friends"],
+            music: ["Sing my heart out to my favorite song", "Learn a new dance move"],
+            farm: ["Help water the garden", "Collect eggs if you have chickens"]
+        }
+
+        function getTailoredPrompts(count = 4) {
+            let prompts = [...activityBank.general]
+            if (appData.interests.includes('art') || appData.interests.includes('drawing')) prompts = prompts.concat(activityBank.creative)
+            if (appData.interests.includes('music')) prompts = prompts.concat(activityBank.music)
+            if (appData.interests.includes('animals') || appData.interests.includes('farm')) prompts = prompts.concat(activityBank.farm)
+            // Shuffle and return unique
+            prompts = [...new Set(prompts)]
+            return prompts.sort(() => 0.5 - Math.random()).slice(0, count)
+        }
+
+        // Render interest grid in onboarding
+        function renderInterestGrid() {
+            const container = document.getElementById('interestGrid')
+            const options = [
+                { emoji: '🎨', label: 'Drawing / Art' },
+                { emoji: '🎹', label: 'Music / Piano' },
+                { emoji: '🏊', label: 'Swimming' },
+                { emoji: '🐮', label: 'Animals / Farm' },
+                { emoji: '🚗', label: 'Cars' },
+                { emoji: '📚', label: 'Reading' },
+                { emoji: '🧶', label: 'Crochet / Crafts' },
+                { emoji: '⚽', label: 'Sports' },
+                { emoji: '🌍', label: 'Exploring new places' }
+            ]
+            container.innerHTML = options.map(opt => `
+                <div onclick="this.classList.toggle('!bg-pink-200'); toggleInterest('${opt.label}')" 
+                     class="bg-white border-4 border-pink-300 hover:border-pink-400 rounded-3xl px-4 py-6 text-center cursor-pointer transition-all text-4xl flex flex-col items-center justify-center">
+                    <div>${opt.emoji}</div>
+                    <div class="text-sm font-medium mt-3">${opt.label}</div>
+                </div>
+            `).join('')
+        }
+
+        let selectedInterests = []
+
+        window.toggleInterest = function(label) {
+            if (selectedInterests.includes(label)) {
+                selectedInterests = selectedInterests.filter(i => i !== label)
+            } else {
+                selectedInterests.push(label)
+            }
+        }
+
+        function completeOnboarding() {
+            const name = document.getElementById('onboardName').value.trim() || "SuperKid"
+            const age = parseInt(document.getElementById('onboardAge').value) || 8
+            
+            if (age < 4 || age > 12) {
+                alert("Age must be between 4 and 12 – you’re going to be amazing either way! 🌟")
+                return
+            }
+            
+            appData.profile = { name, age }
+            appData.interests = selectedInterests
+            
+            // Save to localStorage (simulates the JSON file you can later read in Python)
+            localStorage.setItem('questlyData', JSON.stringify(appData))
+            
+            hideModal()
+            renderEverything()
+            
+            // Show a fun welcome animation
+            const header = document.getElementById('welcomeHeader')
+            header.style.transitionDuration = '800ms'
+            header.style.transform = 'scale(1.3)'
+            setTimeout(() => header.style.transform = 'scale(1)', 800)
+        }
+
+        function hideModal() {
+            document.getElementById('onboardingModal').classList.add('hidden')
+        }
+
+        function editProfile() {
+            if (!appData.profile) return
+            const newName = prompt("What's your new superhero name?", appData.profile.name)
+            if (newName) {
+                appData.profile.name = newName
+                localStorage.setItem('questlyData', JSON.stringify(appData))
+                renderEverything()
+            }
+        }
+
+        function showRewards() {
+            const msg = `🎉 You have ${appData.points} Adventure Coins!\n\nYou can “spend” them on real-life treats with your parents (ice-cream, extra playtime, stickers, etc.)!`
+            alert(msg)
+        }
+
+        function switchTab(n) {
+            // Deactivate all
+            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active', 'bg-pink-100'))
+            document.getElementById('tab' + n).classList.add('active', 'bg-pink-100')
+            
+            // Hide all content
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'))
+            // Show selected
+            document.getElementById('content' + n).classList.remove('hidden')
+        }
+
+        function renderEverything() {
+            if (!appData.profile) return
+            
+            // Profile header
+            document.getElementById('kidNameDisplay').textContent = appData.profile.name
+            document.getElementById('kidAgeDisplay').innerHTML = `${appData.profile.age} years old <span class="text-pink-400">• ${appData.interests.length} passions</span>`
+            document.getElementById('kidAvatar').innerHTML = appData.age > 8 ? '🦸‍♂️' : '🧚'
+            
+            // Points
+            document.getElementById('pointsDisplay').textContent = appData.points
+            
+            // Date
+            const now = new Date()
+            document.getElementById('currentDate').textContent = now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })
+            
+            // Streak
+            document.getElementById('streakCount').innerHTML = `${appData.streak} day streak <i class="fas fa-fire text-orange-400"></i>`
+            
+            // Welcome
+            document.getElementById('welcomeHeader').innerHTML = `Good morning, ${appData.profile.name}! Ready to crush some quests? 🌈`
+            
+            // Random daily motivation
+            const motivations = [
+                "Every small quest makes you stronger! 💪",
+                "Today is the perfect day to learn something new 🧠",
+                "Your smile is the best reward 🌟",
+                "You are braver than you believe 🦁"
+            ]
+            document.getElementById('dailyMotivation').textContent = motivations[Math.floor(Math.random() * motivations.length)]
+            
+            // Monthly plans
+            renderMonthlyPlans()
+            
+            // Daily quests
+            renderDailyQuests()
+            
+            // Completed today
+            document.getElementById('completedToday').textContent = appData.completedCount
+        }
+
+        function renderMonthlyPlans() {
+            const container = document.getElementById('monthlyPlansContainer')
+            container.innerHTML = appData.monthlyPlans.map((plan, i) => `
+                <div class="quest-card bg-white rounded-3xl p-6 shadow-xl border-4 border-pink-200">
+                    <div class="flex justify-between">
+                        <div class="text-4xl">${plan.emoji}</div>
+                        <button onclick="deleteMonthlyPlan(${i})" class="text-red-300 hover:text-red-500">✕</button>
+                    </div>
+                    <h4 class="text-2xl font-bold text-pink-700 mt-4">${plan.title}</h4>
+                    <p class="text-emerald-600">${plan.description}</p>
+                    <div class="text-xs bg-emerald-100 text-emerald-700 px-4 py-1 inline-block rounded-3xl mt-6">${plan.progress}% complete</div>
+                    <button onclick="breakIntoDaily(${i})" class="mt-4 text-xs bg-emerald-400 hover:bg-emerald-500 text-white px-5 py-2 rounded-3xl">Turn this into daily quests →</button>
+                </div>
+            `).join('')
+            
+            if (appData.monthlyPlans.length === 0) {
+                container.innerHTML = `<div class="col-span-full text-center py-12 text-pink-400 text-2xl">No big dreams yet!<br><button onclick="addMonthlyPlan()" class="mt-6 text-pink-600 underline">Add your first monthly goal →</button></div>`
+            }
+        }
+
+        function addMonthlyPlan() {
+            const title = prompt("What big dream do you have for this month? (e.g. Learn to swim)", "Learn to play guitar")
+            if (!title) return
+            const emoji = prompt("Choose an emoji for it!", "🎸")
+            appData.monthlyPlans.push({
+                title,
+                emoji: emoji || '🌟',
+                description: "I will practice every week!",
+                progress: Math.floor(Math.random() * 40) + 10
+            })
+            localStorage.setItem('questlyData', JSON.stringify(appData))
+            renderMonthlyPlans()
+        }
+
+        function deleteMonthlyPlan(i) {
+            if (confirm("Delete this big dream?")) {
+                appData.monthlyPlans.splice(i, 1)
+                localStorage.setItem('questlyData', JSON.stringify(appData))
+                renderMonthlyPlans()
+            }
+        }
+
+        function breakIntoDaily(i) {
+            const plan = appData.monthlyPlans[i]
+            const prompts = getTailoredPrompts(3)
+            prompts.forEach(p => {
+                appData.dailyQuests.push({
+                    text: p,
+                    completed: false,
+                    fromMonthly: plan.title
+                })
+            })
+            alert(`✅ Added 3 daily quests from “${plan.title}”!`)
+            localStorage.setItem('questlyData', JSON.stringify(appData))
+            renderDailyQuests()
+            switchTab(2) // go to daily tab
+        }
+
+        function renderDailyQuests() {
+            const container = document.getElementById('dailyQuestList')
+            container.innerHTML = appData.dailyQuests.map((quest, i) => `
+                <div class="quest-card flex items-center gap-x-6 bg-white rounded-3xl p-5 shadow-xl ${quest.completed ? 'opacity-70 line-through' : ''}">
+                    <input type="checkbox" ${quest.completed ? 'checked' : ''} 
+                           onchange="toggleQuestComplete(${i})"
+                           class="w-8 h-8 accent-pink-500">
+                    <div class="flex-1">
+                        <span class="text-2xl">${quest.text}</span>
+                        ${quest.fromMonthly ? `<span class="ml-3 text-xs bg-pink-100 text-pink-600 px-3 py-px rounded-3xl">from ${quest.fromMonthly}</span>` : ''}
+                    </div>
+                    <button onclick="deleteQuest(${i})" class="text-pink-300 hover:text-pink-500 text-2xl">🗑</button>
+                </div>
+            `).join('')
+            
+            if (appData.dailyQuests.length === 0) {
+                container.innerHTML = `<div class="text-center py-12 text-2xl text-pink-400">No quests yet!<br>Click “Get smart suggestions” to get started 🪄</div>`
+            }
+        }
+
+        window.toggleQuestComplete = function(i) {
+            const quest = appData.dailyQuests[i]
+            quest.completed = !quest.completed
+            if (quest.completed) {
+                appData.completedCount++
+                appData.points += 15
+                // Fun confetti
+                createConfetti()
+            }
+            localStorage.setItem('questlyData', JSON.stringify(appData))
+            renderDailyQuests()
+            renderEverything()
+        }
+
+        function createConfetti() {
+            for (let i = 0; i < 80; i++) {
+                const confetti = document.createElement('div')
+                confetti.textContent = ['🌟','🎉','🦄','🍭'][Math.floor(Math.random()*4)]
+                confetti.style.position = 'fixed'
+                confetti.style.left = Math.random() * 100 + 'vw'
+                confetti.style.top = '-20px'
+                confetti.style.fontSize = '2rem'
+                confetti.style.zIndex = '9999'
+                confetti.style.pointerEvents = 'none'
+                document.body.appendChild(confetti)
+                
+                const duration = Math.random() * 3000 + 2000
+                confetti.animate([
+                    { transform: 'translateY(0)' },
+                    { transform: `translateY(${window.innerHeight + 100}px) rotate(${Math.random()*800}deg)` }
+                ], {
+                    duration: duration,
+                    easing: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)'
+                })
+                setTimeout(() => confetti.remove(), duration)
+            }
+        }
+
+        function deleteQuest(i) {
+            if (confirm("Remove this quest?")) {
+                appData.dailyQuests.splice(i, 1)
+                localStorage.setItem('questlyData', JSON.stringify(appData))
+                renderDailyQuests()
+            }
+        }
+
+        function addCustomQuest() {
+            const text = prompt("What quest do YOU want to add today?", "Teach my little sister how to draw a cat")
+            if (text) {
+                appData.dailyQuests.push({ text, completed: false })
+                localStorage.setItem('questlyData', JSON.stringify(appData))
+                renderDailyQuests()
+            }
+        }
+
+        function suggestDailyTasks() {
+            const prompts = getTailoredPrompts(6)
+            let html = `<div class="text-pink-600 text-xl mb-4">Here are some fun ideas just for you:</div>`
+            prompts.forEach(p => {
+                html += `<div onclick="addSuggestedQuest('${p}')" class="quest-card cursor-pointer flex justify-between items-center bg-white rounded-3xl px-6 py-5 mb-3 text-xl border-2 border-dashed border-pink-300">${p} <span class="text-3xl">➕</span></div>`
+            })
+            const container = document.getElementById('dailyQuestList')
+            container.innerHTML = html + container.innerHTML
+        }
+
+        window.addSuggestedQuest = function(text) {
+            appData.dailyQuests.unshift({ text, completed: false })
+            localStorage.setItem('questlyData', JSON.stringify(appData))
+            renderDailyQuests()
+        }
+
+        function startDay() {
+            alert(`🌟 ${appData.profile.name}, your day is officially started!\n\nRemember: every checked quest gives you coins and makes you stronger!`)
+            switchTab(2)
+        }
+
+        function getRandomPrompt() {
+            const p = getTailoredPrompts(1)[0]
+            alert(`✨ Random spark of joy for you:\n\n${p}\n\nAdd it to your quests?`)
+            if (confirm("Add to Daily Quests?")) {
+                appData.dailyQuests.unshift({ text: p, completed: false })
+                localStorage.setItem('questlyData', JSON.stringify(appData))
+                renderDailyQuests()
+                switchTab(2)
+            }
+        }
+
+        // Break timer
+        let timerInterval = null
+        function startFocusTimer() {
+            if (timerInterval) clearInterval(timerInterval)
+            let timeLeft = 45 * 60
+            const display = document.getElementById('timerDisplay')
+            
+            timerInterval = setInterval(() => {
+                timeLeft--
+                const min = Math.floor(timeLeft / 60)
+                const sec = timeLeft % 60
+                display.textContent = `${min}:${sec < 10 ? '0' : ''}${sec}`
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval)
+                    display.innerHTML = `🎉 Time for a break!<br><span class="text-4xl">You did amazing!</span>`
+                    giveBreakSuggestion()
+                }
+            }, 1000)
+        }
+
+        function giveBreakSuggestion() {
+            const suggestions = [
+                "🎨 Grab your crayons and draw the happiest animal you can imagine!",
+                "🧘‍♀️ Do 10 silly jumps and make the silliest face in the mirror",
+                "🌼 Go outside and find 5 different leaves or flowers",
+                "🍦 Imagine your perfect ice-cream sundae and describe it out loud"
+            ]
+            const box = document.getElementById('breakSuggestionBox')
+            box.textContent = suggestions[Math.floor(Math.random() * suggestions.length)]
+            box.classList.remove('hidden')
+            setTimeout(() => box.classList.add('hidden'), 8000)
+        }
+
+        function saveJournal() {
+            const text = document.getElementById('journalInput').value.trim()
+            if (!text) return
+            const today = new Date().toISOString().split('T')[0]
+            appData.journalEntries[today] = text
+            localStorage.setItem('questlyData', JSON.stringify(appData))
+            alert("📖 Your story is saved forever! You’re a great writer.")
+            document.getElementById('journalInput').value = ''
+        }
+
+        function saveGratitude() {
+            const g1 = document.getElementById('gratitude1').value.trim()
+            const g2 = document.getElementById('gratitude2').value.trim()
+            const g3 = document.getElementById('gratitude3').value.trim()
+            if (!g1 || !g2 || !g3) return alert("Fill all three hearts ❤️")
+            
+            const today = new Date().toISOString().split('T')[0]
+            appData.gratitudeEntries[today] = [g1, g2, g3]
+            localStorage.setItem('questlyData', JSON.stringify(appData))
+            alert("❤️ Gratitude saved! Your heart just got bigger.")
+            // Clear inputs
+            document.getElementById('gratitude1').value = ''
+            document.getElementById('gratitude2').value = ''
+            document.getElementById('gratitude3').value = ''
+        }
+
+        function endDayCelebration() {
+            appData.points += 50
+            appData.streak++
+            localStorage.setItem('questlyData', JSON.stringify(appData))
+            
+            const msg = `🎊 ${appData.profile.name}, you did it!\n\n+50 coins added!\nStreak is now ${appData.streak} days 🔥\n\nSee you tomorrow for more adventures!`
+            alert(msg)
+            renderEverything()
+        }
+
+        function showScheduleModal() {
+            let text = "📅 Your schedule today:\n\n"
+            appData.schedule.forEach(item => {
+                text += `${item.time} – ${item.title}\n`
+            })
+            text += "\nWant to add a new event?"
+            if (confirm(text)) {
+                const time = prompt("Time (e.g. 15:30)", "15:30")
+                const title = prompt("What are you doing?", "Swimming lesson")
+                if (time && title) {
+                    appData.schedule.push({ time, title })
+                    localStorage.setItem('questlyData', JSON.stringify(appData))
+                    alert("Added!")
+                }
+            }
+        }
+
+        function showReminders() {
+            let text = "🛎️ Your reminders:\n\n"
+            if (appData.reminders.length === 0) text += "No reminders yet. You’re on top of everything!"
+            else appData.reminders.forEach(r => text += `• ${r}\n`)
+            alert(text)
+            
+            // Example of offline reminder
+            if (confirm("Want to set a reminder for 30 minutes from now?")) {
+                appData.reminders.push("30-minute reminder: Time to check on your quests!")
+                setTimeout(() => {
+                    if (confirm("⏰ Hey superstar! 30 minutes have passed.\nHave you finished any quests yet?")) {
+                        appData.points += 10
+                        localStorage.setItem('questlyData', JSON.stringify(appData))
+                        renderEverything()
+                    }
+                }, 1800000) // 30 min in ms for demo
+            }
+        }
+
+        // Load saved data on start
+        function loadSavedData() {
+            const saved = localStorage.getItem('questlyData')
+            if (saved) {
+                appData = JSON.parse(saved)
+            } else {
+                // First time demo data
+                appData.monthlyPlans = [
+                    { title: "Master swimming", emoji: "🏊", description: "I will practice 3 times a week", progress: 35 },
+                    { title: "Learn 10 new songs", emoji: "🎤", description: "On the guitar or piano", progress: 20 }
+                ]
+                appData.dailyQuests = [
+                    { text: "🐮 Feed the cows and give them big hugs", completed: false },
+                    { text: "📚 Finish my math homework", completed: true },
+                    { text: "🎨 Paint a picture of my family", completed: false }
+                ]
+                appData.completedCount = 1
+            }
+        }
+
+        // Main app launcher
+        window.onload = function() {
+            initTailwind()
+            loadSavedData()
+            
+            // Show onboarding only if no profile
+            if (!appData.profile) {
+                renderInterestGrid()
+                document.getElementById('onboardingModal').classList.remove('hidden')
+            } else {
+                renderEverything()
+            }
+            
+            console.log('%c🚀 Questly Python app prototype ready! Copy this entire HTML into a file called index.html and open it in your browser. Later you can convert this exact UI to Tkinter or customtkinter in your Python IDE.', 'background:#ff6bcb;color:white;padding:4px 8px;border-radius:4px')
+        }
+    </script>
+</body>
+</html>
